@@ -1,48 +1,27 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const path = require('path');
+const { merge } = require("webpack-merge");
+const singleSpaDefaults = require("webpack-config-single-spa");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
-module.exports = {
-  mode: 'development',
-  entry: {
-    bundle: path.resolve(__dirname, 'index.js'),
-  },
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: '[name][contenthash].js',
-  },
-  devServer: {
-    static: {
-      directory: path.resolve(__dirname, 'dist'),
-    },
-    port: 3001,
-    open: true,
-    hot: true,
-    compress: true,
-    historyApiFallback: true
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      title: 'Root config',
-      filename: 'index.html',
-      template: './template.html'
-    })
-  ],
-  // module: {
-  //   rules: [
-  //     // JavaScript
-  //     {
-  //       test: /\.js$/,
-  //       exclude: /node_modules/,
-  //       use: ['babel-loader'],
-  //     },
-  //     {
-  //       test: /\.(?:ico|gif|png|jpg|jpeg)$/i,
-  //       type: 'asset/resource',
-  //     },
-  //     {
-  //       test: /\.(woff(2)?|eot|ttf|otf|svg|)$/,
-  //       type: 'asset/inline',
-  //     },
-  //   ],
-  // }
+module.exports = (webpackConfigEnv, argv) => {
+  const orgName = "mfe";
+  const defaultConfig = singleSpaDefaults({
+    orgName,
+    projectName: "root-config",
+    webpackConfigEnv,
+    argv,
+    disableHtmlGeneration: true,
+  });
+
+  return merge(defaultConfig, {
+    plugins: [
+      new HtmlWebpackPlugin({
+        inject: false,
+        template: "index.ejs",
+        templateParameters: {
+          isLocal: webpackConfigEnv && webpackConfigEnv.isLocal,
+          orgName,
+        },
+      }),
+    ],
+  });
 };
